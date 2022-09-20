@@ -9,19 +9,26 @@ import {
   FlatList,
   StatusBar,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function App() {
   const [keyword, setKeyword] = useState("");
-  const [recipes, setRrecipes] = useState([]);
+  const [recipes, setRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const getRepositories = () => {
+  const getRecipes = () => {
+    setIsLoading(true);
     fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${keyword}`)
       .then((response) => response.json())
-      .then((json) => setRrecipes(json.meals))
+      .then((json) => {
+        setRecipes(json.meals);
+        setIsLoading(false);
+      })
       .catch((error) => {
         Alert.alert("Error", error);
+        setIsLoading(false);
       });
   };
 
@@ -42,25 +49,35 @@ export default function App() {
         />
       </View>
       <View style={styles.listContainer}>
-        <FlatList
-          style={styles.list}
-          keyExtractor={(item) => item.idMeal}
-          renderItem={({ item }) => (
-            <View style={styles.listRow}>
-              <Image
-                style={styles.listImage}
-                source={{
-                  uri: item.strMealThumb,
-                }}
-              />
-              <View style={styles.listColumn}>
-                <Text style={styles.listTitle}>{item.strMeal}</Text>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="mediumorchid" />
+        ) : recipes ? (
+          <FlatList
+            style={styles.list}
+            keyExtractor={(item) => item.idMeal}
+            renderItem={({ item }) => (
+              <View style={styles.listRow}>
+                <Image
+                  style={styles.listImage}
+                  source={{
+                    uri: item.strMealThumb,
+                  }}
+                />
+                <View style={styles.listColumn}>
+                  <Text style={styles.listTitle}>{item.strMeal}</Text>
+                </View>
               </View>
-            </View>
-          )}
-          data={recipes}
-          ItemSeparatorComponent={listSeparator}
-        />
+            )}
+            data={recipes}
+            ItemSeparatorComponent={listSeparator}
+          />
+        ) : (
+          <View style={styles.container}>
+            <Text style={styles.listTitle}>
+              Sorry, we could not find any recipes!
+            </Text>
+          </View>
+        )}
       </View>
       <View style={styles.searchContainer}>
         <View style={styles.listRow}>
@@ -68,7 +85,7 @@ export default function App() {
             style={styles.input}
             onChangeText={(text) => setKeyword(text)}
           />
-          <Pressable style={styles.button} onPress={getRepositories}>
+          <Pressable style={styles.button} onPress={getRecipes}>
             <Ionicons name="search" size={24} color="white" />
           </Pressable>
         </View>
