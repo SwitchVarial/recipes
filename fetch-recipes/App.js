@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -35,6 +35,10 @@ export default function App() {
   const listSeparator = () => {
     return <View style={styles.separator} />;
   };
+
+  useEffect(() => {
+    getRecipes();
+  }, []);
 
   return (
     <View style={styles.container}>
